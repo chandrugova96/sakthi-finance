@@ -15,6 +15,10 @@ const adminSchema = new Schema(
             type: String,
             required: false,
         },
+        userName: {
+            type: String,
+            required: true,
+        },
         password: {
             type: String,
             required: true,

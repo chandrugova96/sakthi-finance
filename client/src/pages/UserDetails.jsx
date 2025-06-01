@@ -1,5 +1,7 @@
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useState } from "react";
+
+import { isAuthenticated } from "../utils/auth";
 
 const allUsers = [
   { id: 1, name: "John Doe", mobile: "1234567890", village: "Rampur", totalAmount: 1000, paidAmount: 700 },
@@ -14,6 +16,12 @@ const UserDetails = () => {
   const originalUser = allUsers.find(u => u.id === Number(userId));
   const [user, setUser] = useState({ ...originalUser });
   const [payment, setPayment] = useState("");
+
+  useEffect(() => {
+    if (!isAuthenticated()) {
+      navigate("/login");
+    }
+  }, [navigate]);
 
   if (!user) {
     return (

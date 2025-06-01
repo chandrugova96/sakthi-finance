@@ -1,16 +1,17 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 
 function Layout({ children }) {
-  const [username, setUsername] = useState("Chandru");
+  const [username, setUsername] = useState("");
 
   useEffect(() => {
     const token = localStorage.getItem("token");
 
     if (token) {
       try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        setUsername(payload.username || "User");
+        const decoded = jwtDecode(token);
+        setUsername(decoded.name || "User");
       } catch (error) {
         console.error("Invalid token");
       }

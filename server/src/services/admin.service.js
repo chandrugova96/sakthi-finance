@@ -10,4 +10,14 @@ AdminService.get = async (match) => {
   }
 };
 
+AdminService.create = async (payload) => {
+  try {
+    let newUser = new db.AdminModal(payload);
+    await newUser.save();
+    return newUser;
+  } catch (err) {
+    throw err;
+  }
+};
+
 module.exports = AdminService;

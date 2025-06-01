@@ -7,7 +7,9 @@ module.exports = {
 
     signAccessToken: (payload) => {
         return new Promise((resolve, reject) => {
-            const options = {};
+            const options = {
+                expiresIn: '12h'
+            };
             JWT.sign(payload, JWT_SECRET, options, (err, token) => {
                 if (err) {
                     reject(err);

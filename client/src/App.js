@@ -22,7 +22,7 @@ function AppRoutes() {
       <Layout>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/village/:villageName" element={<VillageUsers />} />
+          <Route path="/village/:villageId" element={<VillageUsers />} />
           <Route path="/user/:userId" element={<UserDetails />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

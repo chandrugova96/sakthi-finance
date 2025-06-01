@@ -1,28 +1,37 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-const villagesData = [
-    "Rampur",
-    "Lakshmi Nagar",
-    "Gopalpur",
-    "Rajgarh",
-    "Sundarpur",
-    "Bhavnipur",
-    "Devgarh",
-    "Madhuban",
-    "Shantipur",
-];
+import { isAuthenticated } from "../utils/auth";
+import AuthRepository from "../repositories/AuthRepository";
 
 const Home = () => {
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState("");
+    const [villagesData, setVillagesData] = useState([]);
+
+    useEffect(() => {
+        if (!isAuthenticated()) {
+            navigate("/login");
+        } else {
+            getVillages()
+        }
+    }, [navigate]);
+
+    const getVillages = async () =>{
+        try {
+            let villages = await AuthRepository.getVillage();
+            setVillagesData(villages.data || [])
+        } catch (error) {
+            setVillagesData([])
+        }
+    };
 
     const filteredVillages = villagesData.filter(village =>
-        village.toLowerCase().includes(searchTerm.toLowerCase())
+        village.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const handleVillageClick = (village) => {
-        navigate(`/village/${encodeURIComponent(village)}`);
+        navigate(`/village/${encodeURIComponent(village.id)}`);
     };
 
     return (
@@ -47,7 +56,7 @@ const Home = () => {
                                 style={{ borderRadius: '12px', cursor: 'pointer' }}
                                 onClick={() => handleVillageClick(village)}
                             >
-                                {village}
+                                {village.name}
                             </li>
                         ))
                     ) : (

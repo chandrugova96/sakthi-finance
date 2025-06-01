@@ -1,26 +1,48 @@
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useState } from "react";
 
-const usersData = {
-    Rampur: [
-        { id: 1, name: "John Doe", mobile: "1234567890", totalAmount: 1000, paidAmount: 700 },
-        { id: 2, name: "Jane Smith", mobile: "0987654321", totalAmount: 2000, paidAmount: 1500 },
-    ],
-    "Lakshmi Nagar": [
-        { id: 3, name: "Raj Kumar", mobile: "1112223333", totalAmount: 1500, paidAmount: 1500 },
-    ],
-};
+import { isAuthenticated } from "../utils/auth";
+import AuthRepository from "../repositories/AuthRepository";
 
 const VillageUsers = () => {
-    const { villageName } = useParams();
+    const { villageId } = useParams();
     const navigate = useNavigate();
 
     const [searchTerm, setSearchTerm] = useState("");
-    const users = usersData[villageName] || [];
+    const [villageData, setVillageData] = useState({});
+    const [users, setUsers] = useState([]);
+
+    useEffect(() => {
+        if (!isAuthenticated()) {
+            navigate("/login");
+        } else {
+            getVillages()
+            getUsers()
+        }
+    }, [navigate]);
+
+    const getVillages = async () =>{
+        try {
+            let villages = await AuthRepository.getVillage();
+            let village = villages.data.find( v => v.id == villageId);
+            setVillageData(village || {})
+        } catch (error) {
+            setVillageData([])
+        }
+    };
+
+    const getUsers = async () =>{
+        try {
+            let users = await AuthRepository.getUsers(villageId);
+            setUsers(users.data || [])
+        } catch (error) {
+            setUsers([])
+        }
+    }
 
     const filteredUsers = users.filter(user =>
         user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.mobile.includes(searchTerm)
+        user.mobileNumber.includes(searchTerm)
     );
 
     const handleUserClick = (userId) => {
@@ -29,7 +51,7 @@ const VillageUsers = () => {
 
     return (
         <div className="container mt-4">
-            <h2 className="mb-3">Users in {villageName}</h2>
+            <h2 className="mb-3">Users in {villageData?.name}</h2>
 
             <input
                 type="text"
@@ -48,7 +70,7 @@ const VillageUsers = () => {
                             style={{ borderRadius: '12px', cursor: 'pointer' }}
                             onClick={() => handleUserClick(user.id)}
                         >
-                            {user.name} - {user.mobile}
+                            {user.name} - {user.mobileNumber}
                         </li>
                     ))) : (
                     <li className="list-group-item text-muted">No users found</li>

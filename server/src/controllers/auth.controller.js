@@ -7,10 +7,27 @@ const { encrypt } = require('../helper')
 
 class AuthController { }
 
+AuthController.create = async (req, res) => {
+   try {
+      let payload = req.body;
+      let admin = await AdminService.get({ email: payload.email });
+      if (admin) {
+         return Response.errors(req, res, statusCodes.HTTP_ALREADY_REPORTED, responseMessage.alreadyExited)
+      }
+
+      payload['password'] = await encrypt.passwordEncrypt(payload.password);
+      await AdminService.create(payload);
+      return Response.success(req, res, statusCodes.HTTP_OK, responseMessage.createdSuccess)
+   }
+   catch (error) {
+      return Response.errors(req, res, statusCodes.HTTP_INTERNAL_SERVER_ERROR, responseMessage.errorInFindingAll)
+   }
+}
+
 AuthController.login = async (req, res) => {
    try {
-      let { email, password } = req.body;
-      let admin = await AdminService.get({ email });
+      let { userName, password } = req.body;
+      let admin = await AdminService.get({ userName });
       if (!admin) {
          return Response.success(req, res, statusCodes.HTTP_NOT_FOUND, responseMessage.notFound)
       }

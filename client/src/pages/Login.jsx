@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+
 import { isAuthenticated } from "../utils/auth";
+import AdminRepository from '../repositories/AuthRepository';
 
 function Login() {
   const navigate = useNavigate();
@@ -14,13 +16,17 @@ function Login() {
     }
   }, [navigate]);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    // Dummy auth check
-    if (username === "admin" && password === "password") {
-      localStorage.setItem("token", "valid-token");
-      navigate("/");
+  const handleSubmit = async () => {
+    if (username && password ) {
+      let result = await AdminRepository.login({ userName: username, password });
+      if (result && result.data) {
+        localStorage.setItem("token", result.data);
+        navigate("/");
+      } else if (result && result.message) {
+        setError(result.message);
+      } else {
+        setError("Invalid credentials");
+      }
     } else {
       setError("Invalid credentials");
     }
