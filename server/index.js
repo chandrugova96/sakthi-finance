@@ -21,9 +21,8 @@ app.use("/public", express.static(path.join(__dirname, "public")));
 
 routers(app);
 
-// DB connection (only connect once)
+// DB connection flag
 let isDbConnected = false;
-
 async function connectToDb() {
 	if (!isDbConnected) {
 		mongoose.set("strictQuery", false);
@@ -33,8 +32,18 @@ async function connectToDb() {
 	}
 }
 
-// Export serverless handler
-module.exports = async (req, res) => {
-	await connectToDb();
-	app(req, res); // Let Express handle the request
-};
+// If running locally (e.g., with `node index.js`)
+if (require.main === module) {
+	connectToDb().then(() => {
+		const PORT = process.env.APP_PORT || 3000;
+		app.listen(PORT, () => {
+			console.log(`🚀 Server running on http://localhost:${PORT}`);
+		});
+	});
+} else {
+	// If running on Vercel (as a serverless function)
+	module.exports = async (req, res) => {
+		await connectToDb();
+		app(req, res);
+	};
+}
