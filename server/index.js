@@ -1,35 +1,40 @@
-const express = require("express")
-const helmet = require("helmet")
-const cors = require("cors")
-const http = require("http")
-const bodyParser = require("body-parser")
-const path = require("path")
-const mongoose = require("mongoose")
-require("dotenv").config()
+const express = require("express");
+const helmet = require("helmet");
+const cors = require("cors");
+const bodyParser = require("body-parser");
+const path = require("path");
+const mongoose = require("mongoose");
+require("dotenv").config();
 
-require('./config')
-const routers = require("./src/routes")
-const { DB_URL } = require("./config/db.config")
+require("./config");
+const routers = require("./src/routes");
+const { DB_URL } = require("./config/db.config");
 
-// Express Application
-const app = express()
-app.use(helmet())
-app.use(cors())
-app.use(bodyParser.json({ limit: "3000mb" }))
-app.use(bodyParser.urlencoded({ limit: "3000mb", extended: true }))
-app.use("/public", express.static(path.join(__dirname, "public")))
-routers(app)
-const server = http.createServer(app)
+// Create Express app
+const app = express();
 
-//DB connection
-mongoose.set("strictQuery", false)
-mongoose.connect(DB_URL)
-const db = mongoose.connection;
+app.use(helmet());
+app.use(cors());
+app.use(bodyParser.json({ limit: "3000mb" }));
+app.use(bodyParser.urlencoded({ limit: "3000mb", extended: true }));
+app.use("/public", express.static(path.join(__dirname, "public")));
 
-db.on("error", console.error.bind(console, "connection error: "))
-db.once("open", function () {
-    console.log("DB connected successfully")
-    server.listen(process.env.APP_PORT, () => {
-        console.log(`Server on port : ${process.env.APP_PORT}\n`)
-    })
-})
+routers(app);
+
+// DB connection (only connect once)
+let isDbConnected = false;
+
+async function connectToDb() {
+	if (!isDbConnected) {
+		mongoose.set("strictQuery", false);
+		await mongoose.connect(DB_URL);
+		isDbConnected = true;
+		console.log("✅ DB connected successfully");
+	}
+}
+
+// Export serverless handler
+module.exports = async (req, res) => {
+	await connectToDb();
+	app(req, res); // Let Express handle the request
+};
