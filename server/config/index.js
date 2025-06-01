@@ -9,13 +9,11 @@ colors.setTheme({
 	test: ["blue"],
 });
 
-let env_file = "";
-env_file = ".env";
-process.env.is_development_env = true;
-
-// Load the env based on the environment
-const loadEnv = dotenv.config({ path: env_file }).error;
-if (loadEnv) {
-	console.log("Invalid env provided exiting the app.".error, loadEnv);
-	process.exit(1);
+// Load .env only if running locally
+if (process.env.NODE_ENV !== "production") {
+	const result = dotenv.config();
+	if (result.error) {
+		console.log("Invalid env provided, exiting the app.".error, result.error);
+		process.exit(1);
+	}
 }
