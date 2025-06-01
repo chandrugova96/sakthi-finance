@@ -1,16 +1,40 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+
+import Layout from "./components/Layout";
+import Login from "./pages/Login";
 import Home from "./pages/Home";
-import About from "./pages/About";
+import VillageUsers from "./pages/VillageUsers";
+import UserDetails from "./pages/UserDetails";
 import NotFound from "./pages/NotFound";
+
+function AppRoutes() {
+  const location = useLocation();
+  const noLayoutRoutes = ["/login"];
+
+  const isNoLayout = noLayoutRoutes.includes(location.pathname);
+
+  return (
+    isNoLayout ? (
+      <Routes>
+        <Route path="/login" element={<Login />} />
+      </Routes>
+    ) : (
+      <Layout>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/village/:villageName" element={<VillageUsers />} />
+          <Route path="/user/:userId" element={<UserDetails />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Layout>
+    )
+  );
+}
 
 function App() {
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/about" element={<About />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+      <AppRoutes />
     </Router>
   );
 }
